@@ -5,9 +5,6 @@
 
 local SCALE = 1.2
 
-local FONT      = [[Interface\AddOns\PhanxMedia\font\PTSans-Bold.ttf]]
-local FONT_BOLD = [[Interface\AddOns\PhanxMedia\font\PTSans-Bold.ttf]]
-
 if not IsAddOnLoaded("Blizzard_TimeManager") then
 	LoadAddOn("Blizzard_TimeManager")
 end
@@ -92,10 +89,8 @@ function PhanxMinimap:ADDON_LOADED(addon)
 
 --- Tracking text on mouseover ---
 --[==[
-	local trackingText = Minimap:CreateFontString(nil, "OVERLAY")
+	local trackingText = Minimap:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 	trackingText:SetPoint("BOTTOMLEFT", 3, 1)
-	trackingText:SetFont(FONT, 16 / SCALE, "OUTLINE")
-	trackingText:SetShadowOffset(0, 0)
 	trackingText:SetTextColor(classR, classG, classB)
 
 	Minimap.trackingText = trackingText
@@ -145,10 +140,12 @@ function PhanxMinimap:ADDON_LOADED(addon)
 ]==]
 --- Instance difficulty text ---
 
-	local instanceText = Minimap:CreateFontString(nil, "OVERLAY")
+	local instance = CreateFrame("Frame", nil, Minimap)
+	instance:SetPoint("TOPRIGHT")
+	instance:SetScale(1 / SCALE)
+
+	local instanceText = instance:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
 	instanceText:SetPoint("TOPRIGHT", -3, -3)
-	instanceText:SetFont(FONT, 16 / SCALE, "OUTLINE")
-	instanceText:SetShadowOffset(0, 0)
 
 	Minimap.instanceText = instanceText
 
@@ -160,17 +157,16 @@ function PhanxMinimap:ADDON_LOADED(addon)
 --- Mail text ---
 
 	MiniMapMailFrame:ClearAllPoints()
-	MiniMapMailFrame:SetPoint("TOPLEFT", 3, -3)
-	MiniMapMailFrame:SetHeight(10)
+	MiniMapMailFrame:SetPoint("BOTTOMLEFT")
+	MiniMapMailFrame:SetSize(50, 20)
+	MiniMapMailFrame:SetScale(1 / SCALE)
 
 	MiniMapMailIcon:SetTexture("")
 	MiniMapMailBorder:SetTexture("")
 
-	local mailText = MiniMapMailFrame:CreateFontString(nil, "OVERLAY")
-	mailText:SetPoint("TOPLEFT")
-	mailText:SetFont(FONT_BOLD, 16 / SCALE, "OUTLINE")
-	mailText:SetShadowOffset(0, 0)
-	mailText:SetTextColor(0.4, 1, 0.2)
+	local mailText = MiniMapMailFrame:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
+	mailText:SetPoint("BOTTOMLEFT", 5, 3)
+	mailText:SetTextColor(1, 0.9, 0.8)
 	mailText:SetText("Mail!")
 
 	Minimap.mailText = mailText
@@ -179,6 +175,7 @@ function PhanxMinimap:ADDON_LOADED(addon)
 
 	TimeManagerFrame:ClearAllPoints()
 	TimeManagerFrame:SetPoint("TOPRIGHT", Minimap, "BOTTOMRIGHT", 52, -10)
+	TimeManagerFrame:SetScale(1 / SCALE)
 
 	local clockButton = TimeManagerClockButton
 
@@ -239,8 +236,7 @@ function PhanxMinimap:ADDON_LOADED(addon)
 
 	clockText:ClearAllPoints()
 	clockText:SetPoint("BOTTOMRIGHT", clockButton)
-	clockText:SetFont(FONT, 18 / SCALE, "OUTLINE")
-	clockText:SetShadowOffset(1, -1)
+	clockText:SetFontObject(NumberFontNormalSmall)
 	clockText:SetJustifyH("RIGHT")
 	clockText:SetTextColor(classR, classG, classB)
 
@@ -264,16 +260,16 @@ function PhanxMinimap:ADDON_LOADED(addon)
 	end
 
 	hooksecurefunc("TimeManager_FireAlarm", function()
-		clockText:SetFont(FONT_BOLD, 18 / SCALE, "OUTLINE")
+		clockText:SetFontObject(NumberFontNormal)
 		clockText:SetTextColor(1, 0, 0)
 	end)
 
 	hooksecurefunc("TimeManager_TurnOffAlarm", function()
 		if CalendarGetNumPendingInvites() > 0 then
-			clockText:SetFont(FONT_BOLD, 18 / SCALE, "OUTLINE")
+			clockText:SetFontObject(NumberFontNormal)
 			clockText:SetTextColor(1, 0.8, 0)
 		else
-			clockText:SetFont(FONT, 18 / SCALE, "OUTLINE")
+			clockText:SetFontObject(NumberFontNormalSmall)
 			clockText:SetTextColor(classR, classG, classB)
 		end
 	end)
@@ -283,10 +279,10 @@ function PhanxMinimap:ADDON_LOADED(addon)
 			return
 		end
 		if CalendarGetNumPendingInvites() > 0 then
-			clockText:SetFont(FONT_BOLD, 18 / SCALE, "OUTLINE")
+			clockText:SetFontObject(NumberFontNormal)
 			clockText:SetTextColor(1, 0.8, 0)
 		else
-			clockText:SetFont(FONT, 18 / SCALE, "OUTLINE")
+			clockText:SetFontObject(NumberFontNormalSmall)
 			clockText:SetTextColor(classR, classG, classB)
 		end
 	end)
