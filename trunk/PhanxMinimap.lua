@@ -49,11 +49,9 @@ function PhanxMinimap:ADDON_LOADED(addon)
 	for _, obj in pairs({
 		BattlegroundShine,
 		GameTimeFrame,
-		MiniMapBattlefieldBorder,
 		MinimapBorder,
 		MinimapBorderTop,
 		MiniMapInstanceDifficulty,
-		MiniMapMeetingStoneBorder,
 		MinimapNorthTag,
 		MinimapToggleButton,
 		MiniMapTracking,
@@ -67,11 +65,7 @@ function PhanxMinimap:ADDON_LOADED(addon)
 		obj:Hide()
 		obj.Show = noop
 	end
---[[
-	MiniMapBattlefieldFrame:ClearAllPoints()
-	MiniMapBattlefieldFrame:SetParent(Minimap)
-	MiniMapBattlefieldFrame:SetPoint("TOPLEFT", 2, -2)
-]]
+
 	GameTimeFrame:SetAlpha(0)
 	GameTimeFrame:EnableMouse(false)
 	GameTimeCalendarInvitesTexture:SetParent("Minimap")
@@ -142,6 +136,7 @@ function PhanxMinimap:ADDON_LOADED(addon)
 
 	local instance = CreateFrame("Frame", nil, Minimap)
 	instance:SetPoint("TOPRIGHT")
+	instance:SetSize(16, 16)
 	instance:SetScale(1 / SCALE)
 
 	local instanceText = instance:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
@@ -305,11 +300,10 @@ function PhanxMinimap:ADDON_LOADED(addon)
 end
 
 function PhanxMinimap:PLAYER_DIFFICULTY_CHANGED()
-	local name, type, difficulty, difficultyName, maxPlayers, dynamicDifficulty, isDynamic = GetInstanceInfo()
+	local name, type, difficulty, difficultyName, maxPlayers, dynamicDifficulty, isDynamic, mapID = GetInstanceInfo()
 
 	if (type == "raid" or type == "party") and not (difficulty == 1 and maxPlayers == 5) then
 		local heroic
-
 		if isDynamic then
 			heroic = dynamicDifficulty == 1
 		else
@@ -317,10 +311,10 @@ function PhanxMinimap:PLAYER_DIFFICULTY_CHANGED()
 		end
 
 		if heroic then
-			Minimap.instanceText:SetText(size .. "+")
+			Minimap.instanceText:SetText(maxPlayers .. "+")
 			Minimap.instanceText:SetTextColor(0.4, 1, 0.2)
 		else
-			Minimap.instanceText:SetText(size)
+			Minimap.instanceText:SetText(maxPlayers)
 			Minimap.instanceText:SetTextColor(0.4, 1, 0.2)
 		end
 	else
