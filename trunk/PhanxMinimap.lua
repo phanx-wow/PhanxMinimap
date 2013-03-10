@@ -1,327 +1,236 @@
---[[
-	PhanxMinimap
-	Based on LynSettings, oMinimap, nMinimap, rMinimap, Wanderlust, etc.
---]]
+--[[--------------------------------------------------------------------
+----------------------------------------------------------------------]]
 
-local SCALE = 1.2
+local ADDON = ...
+
+local SCALE = 1.25
+
+local color = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[ select(2, UnitClass("player")) ]
+local classR, classG, classB = color.r, color.g, color.b
 
 if not IsAddOnLoaded("Blizzard_TimeManager") then
 	LoadAddOn("Blizzard_TimeManager")
 end
 
-local ADDON_NAME, namespace = ...
+------------------------------------------------------------------------
+--	General
 
-local PhanxMinimap = CreateFrame("Frame")
-PhanxMinimap:SetScript("OnEvent", function(self, event, ...) return self[ event ] and self[ event ](self, ...) end)
-PhanxMinimap:RegisterEvent("ADDON_LOADED")
+Minimap:ClearAllPoints()
+Minimap:SetPoint("TOPRIGHT", UIParent, floor(-15 / SCALE), floor(-15 / SCALE))
 
-function PhanxMinimap:ADDON_LOADED(addon)
-	if addon ~= ADDON_NAME then return end
+Minimap:SetScale(SCALE)
 
-	local color = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[ select(2, UnitClass("player")) ]
-	local classR, classG, classB = color.r, color.g, color.b
-
-	MinimapCluster:EnableMouse(false)
-
-	Minimap:SetMaskTexture([[Interface\AddOns\PhanxMinimap\media\Minimap-Mask]])
-
-	Minimap:SetScale(SCALE)
-
-	-- Hide ugly checkboard ring crap on quest/archaology blobs
-	-- http://www.wowinterface.com/forums/showthread.php?t=42303
-	Minimap:SetArchBlobRingScalar(0)
-	Minimap:SetQuestBlobRingScalar(0)
-
-	Minimap:ClearAllPoints()
-	Minimap:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", math.floor(-15 / SCALE), math.floor(-15 / SCALE))
-
-	Minimap:EnableMouseWheel(true)
-	Minimap:SetScript("OnMouseWheel", function(self, z)
-		local c = Minimap:GetZoom()
-		if z > 0 and c < 5 then
-			Minimap:SetZoom(c + 1)
-		elseif z < 0 and c > 0 then
-			Minimap:SetZoom(c - 1)
-		end
-	end)
-
-	local noop = function() end
-	for _, obj in pairs({
-		BattlegroundShine,
-		GameTimeFrame,
-		MinimapBorder,
-		MinimapBorderTop,
-		MiniMapInstanceDifficulty,
-		MinimapNorthTag,
-		MinimapToggleButton,
-		MiniMapTracking,
-		MiniMapVoiceChatFrame,
-		MiniMapWorldMapButton,
-		MinimapZoneText,
-		MinimapZoneTextButton,
-		MinimapZoomIn,
-		MinimapZoomOut,
-	}) do
-		obj:Hide()
-		obj.Show = noop
-	end
-
-	GameTimeFrame:SetAlpha(0)
-	GameTimeFrame:EnableMouse(false)
-	GameTimeCalendarInvitesTexture:SetParent("Minimap")
-
---- Tracking menu on right-click ---
-
-	local Minimap_OnClick = Minimap:GetScript("OnMouseUp")
-	Minimap:SetScript("OnMouseUp", function(self, button)
-		if button == "RightButton" then
-			ToggleDropDownMenu(1, nil, MiniMapTrackingDropDown, "cursor")
-		else
-			Minimap_OnClick(self, button)
-		end
-	end)
-
---- Tracking text on mouseover ---
---[==[
-	local trackingText = Minimap:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-	trackingText:SetPoint("BOTTOMLEFT", 3, 1)
-	trackingText:SetTextColor(classR, classG, classB)
-
-	Minimap.trackingText = trackingText
-
-	local trackingNames = setmetatable({
-		["BattleMaster"] = "Battle",
-		["Flight Master"] = "Flight",
-		["Food & Drink"] = "Food",
-		["Profession Trainers"] = "Profession",
-		["Low Level Quests"] = "Quests",
-		["Points of Interest"] = "POIs",
-	}, { __index = function(t, k)
-		if not k then return "" end
-		local v = k:match("^[^ ]+ (.+)$")
-		rawset(t, k, v)
-		return v
-	end })
-
-	local TEXTURE_STRING_LONG = string.format("|T%s:%d:%d:0:2:64:64:4:60:4:60|t %s", "%s", 20 / SCALE, 20 / SCALE, "%s")
-	local TEXTURE_STRING_SHORT = string.format("|T%s:%d:%d:0:2|t%s", "%s", 20 / SCALE, 20 / SCALE, "%s")
-	local textureStrings = setmetatable({ }, { __index = function(t, texture)
-		if not texture then return "%s" end
-		local textureString
-		if texture:match([[^Interface\Icons\]]) then
-			textureString = string.format(TEXTURE_STRING_LONG, texture, "%s")
-		else
-			textureString = string.format(TEXTURE_STRING_SHORT, texture, "%s")
-		end
-		rawset(t, texture, textureString)
-		return textureString
-	end })
-
-	Minimap:HookScript("OnEnter", function(self)
-		for i = 1, GetNumTrackingTypes() do
-			local name, texture, active = GetTrackingInfo(i)
-			if active then
-				self.trackingText:SetFormattedText(textureStrings[ texture ], trackingNames[ name ])
-				break
-			end
-		end
-		self.trackingText:Show()
-	end)
-
-	Minimap:HookScript("OnLeave", function(self)
-		self.trackingText:Hide()
-	end)
-]==]
---- Instance difficulty text ---
-
-	local instance = CreateFrame("Frame", nil, Minimap)
-	instance:SetPoint("TOPRIGHT")
-	instance:SetSize(16, 16)
-	instance:SetScale(1 / SCALE)
-
-	local instanceText = instance:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
-	instanceText:SetPoint("TOPRIGHT", -3, -3)
-
-	Minimap.instanceText = instanceText
-
-	self:RegisterEvent("PLAYER_ENTERING_WORLD")
-	self:RegisterEvent("PLAYER_DIFFICULTY_CHANGED")
-
-	self:PLAYER_DIFFICULTY_CHANGED()
-
---- Mail text ---
-
-	MiniMapMailFrame:ClearAllPoints()
-	MiniMapMailFrame:SetPoint("BOTTOMLEFT")
-	MiniMapMailFrame:SetSize(50, 20)
-	MiniMapMailFrame:SetScale(1 / SCALE)
-
-	MiniMapMailIcon:SetTexture("")
-	MiniMapMailBorder:SetTexture("")
-
-	local mailText = MiniMapMailFrame:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
-	mailText:SetPoint("BOTTOMLEFT", 5, 3)
-	mailText:SetTextColor(1, 0.9, 0.8)
-	mailText:SetText("Mail!")
-
-	Minimap.mailText = mailText
-
---- Clock ---
-
-	TimeManagerFrame:ClearAllPoints()
-	TimeManagerFrame:SetPoint("TOPRIGHT", Minimap, "BOTTOMRIGHT", 52, -10)
-	TimeManagerFrame:SetScale(1 / SCALE)
-
-	local clockButton = TimeManagerClockButton
-
-	clockButton:ClearAllPoints()
-	clockButton:SetPoint("BOTTOMRIGHT", Minimap, -3, 3)
-	clockButton:SetWidth(55)
-	clockButton:SetHeight(18)
-
-	clockButton:RegisterForClicks("AnyUp")
-
-	clockButton:SetScript("OnClick", function(self, button)
-		if self.alarmFiring then
-			PlaySound("igMainMenuQuit")
-			TimeManager_TurnOffAlarm()
-		elseif button == "RightButton" then
-			if not Calendar_Toggle then
-				LoadAddOn("Blizzard_Calendar")
-			end
-			Calendar_Toggle()
-		else
-			TimeManager_Toggle()
-		end
-	end)
-
-	local GAMETIME_TOOLTIP_TOGGLE_CALENDAR = GAMETIME_TOOLTIP_TOGGLE_CALENDAR:gsub("Click", "Right-click")
-
-	function TimeManagerClockButton_UpdateTooltip()
-		GameTooltip:ClearLines()
-
-		if TimeManagerClockButton.alarmFiring then
-			local alarmMessage = GetCVar(CVAR_ALARM_MESSAGE)
-			if alarmMessage:trim() ~= "" then
-				GameTooltip:AddLine(alarmMessage, 1, 1, 1)
-				GameTooltip:AddLine(" ")
-			end
-			GameTooltip:AddLine(TIMEMANAGER_ALARM_TOOLTIP_TURN_OFF)
-		else
-			GameTime_UpdateTooltip()
-			GameTooltip:AddLine(" ")
-			GameTooltip:AddLine(GAMETIME_TOOLTIP_TOGGLE_CLOCK)
-			GameTooltip:AddLine(GAMETIME_TOOLTIP_TOGGLE_CALENDAR)
-		end
-
-		GameTooltip:Show()
-	end
-
-	function GameTime_UpdateTooltip()
-		GameTooltip:AddLine(date("%A, %d %B %Y"), 1, 1, 1)
-		GameTooltip:AddLine(" ")
-		GameTooltip:AddDoubleLine(TIMEMANAGER_TOOLTIP_LOCALTIME, GameTime_GetLocalTime(true), nil, nil, nil, 1, 1, 1)
-		GameTooltip:AddDoubleLine(TIMEMANAGER_TOOLTIP_REALMTIME, GameTime_GetGameTime(true), nil, nil, nil, 1, 1, 1)
-	end
-
-	local clockFrame, clockText, clockAlarmTexture = clockButton:GetRegions()
-
-	clockFrame:Hide()
-	clockAlarmTexture:SetTexture("")
-
-	clockText:ClearAllPoints()
-	clockText:SetPoint("BOTTOMRIGHT", clockButton)
-	clockText:SetFontObject(NumberFontNormalSmall)
-	clockText:SetJustifyH("RIGHT")
-	clockText:SetTextColor(classR, classG, classB)
-
-	Minimap.clockText = clockText
-
-	do
-		local OnUpdate = TimeManagerClockButton:GetScript("OnUpdate")
-
-		local counter = 0
-		TimeManagerClockButton:SetScript("OnUpdate", function(self, elapsed)
-			OnUpdate(self, elapsed)
-			if not self.alarmFiring then return end
-			counter = counter + elapsed
-			local val = counter % 0.4
-			if counter > 0.2 then
-				val = 0.4 - val
-			end
-			val = val * 5
-			clockText:SetTextColor(1, 1 / val, 1 / val)
-		end)
-	end
-
-	hooksecurefunc("TimeManager_FireAlarm", function()
-		clockText:SetFontObject(NumberFontNormal)
-		clockText:SetTextColor(1, 0, 0)
-	end)
-
-	hooksecurefunc("TimeManager_TurnOffAlarm", function()
-		if CalendarGetNumPendingInvites() > 0 then
-			clockText:SetFontObject(NumberFontNormal)
-			clockText:SetTextColor(1, 0.8, 0)
-		else
-			clockText:SetFontObject(NumberFontNormalSmall)
-			clockText:SetTextColor(classR, classG, classB)
-		end
-	end)
-
-	GameTimeFrame:SetScript("OnEvent", function()
-		if TimeManagerClockButton.alarmFiring then
-			return
-		end
-		if CalendarGetNumPendingInvites() > 0 then
-			clockText:SetFontObject(NumberFontNormal)
-			clockText:SetTextColor(1, 0.8, 0)
-		else
-			clockText:SetFontObject(NumberFontNormalSmall)
-			clockText:SetTextColor(classR, classG, classB)
-		end
-	end)
-
---- Gloss overlay effect ---
---[=[
-	local gloss = Minimap:CreateTexture(nil, "OVERLAY")
-	gloss:SetTexture([[Interface\AddOns\PhanxMinimap\media\Minimap-Gloss]])
-	gloss:SetPoint("TOPLEFT", Minimap, "TOPLEFT", -3, 3)
-	gloss:SetPoint("BOTTOMRIGHT", Minimap, "BOTTOMRIGHT", 3, -3)
-	gloss:SetVertexColor(0.7, 0.7, 0.7)
-	gloss:SetAlpha(0.4)
-
-	Minimap.gloss = gloss
--- ]=]
---- Done! ---
-
-	self:UnregisterEvent("ADDON_LOADED")
-	self.ADDON_LOADED = nil
-end
-
-function PhanxMinimap:PLAYER_DIFFICULTY_CHANGED()
-	local name, type, difficulty, difficultyName, maxPlayers, dynamicDifficulty, isDynamic, mapID = GetInstanceInfo()
-
-	if (type == "raid" or type == "party") and not (difficulty == 1 and maxPlayers == 5) then
-		local heroic
-		if isDynamic then
-			heroic = dynamicDifficulty == 1
-		else
-			heroic = difficulty >= 3
-		end
-
-		if heroic then
-			Minimap.instanceText:SetText(maxPlayers .. "+")
-			Minimap.instanceText:SetTextColor(0.4, 1, 0.2)
-		else
-			Minimap.instanceText:SetText(maxPlayers)
-			Minimap.instanceText:SetTextColor(0.4, 1, 0.2)
-		end
-	else
-		Minimap.instanceText:SetText("")
-	end
-end
-
-PhanxMinimap.PLAYER_ENTERING_WORLD = PhanxMinimap.PLAYER_DIFFICULTY_CHANGED
-
+Minimap:SetMaskTexture("Interface\\AddOns\\"..ADDON.."\\media\\Minimap-Mask")
 function GetMinimapShape() return "SQUARE" end
+
+MinimapCluster:EnableMouse(false)
+
+------------------------------------------------------------------------
+--	Zoom with mousewheel
+
+Minimap:EnableMouseWheel(true)
+Minimap:SetScript("OnMouseWheel", function(self, delta)
+	local zoom = self:GetZoom()
+	if delta > 0 and zoom < 5 then
+		self:SetZoom(zoom + 1)
+	elseif delta < 0 and zoom > 0 then
+		self:SetZoom(zoom - 1)
+	end
+end)
+
+------------------------------------------------------------------------
+--	Hide ugly checkboard ring crap on quest/archaology blobs
+--	http://www.wowinterface.com/forums/showthread.php?t=42303
+
+Minimap:SetArchBlobRingScalar(0)
+Minimap:SetQuestBlobRingScalar(0)
+
+------------------------------------------------------------------------
+--	Hide buttons and borders
+
+local function Hide(obj)
+	if obj.UnregisterAllEvents then
+		obj:UnregisterAllEvents()
+	end
+	obj:Hide()
+	obj.Show = obj.Hide
+end
+for _, obj in pairs({
+	BattlegroundShine,
+	GameTimeFrame,
+	MinimapBorder,
+	MinimapBorderTop,
+	MinimapCompassTexture,
+	MinimapNorthTag,
+	MinimapToggleButton,
+	MiniMapTracking,
+	MiniMapVoiceChatFrame,
+	MiniMapWorldMapButton,
+	MinimapZoneText,
+	MinimapZoneTextButton,
+	MinimapZoomIn,
+	MinimapZoomOut,
+}) do
+	Hide(obj)
+end
+
+GameTimeFrame:SetAlpha(0)
+GameTimeFrame:EnableMouse(false)
+
+GameTimeCalendarInvitesTexture:SetParent(Minimap)
+
+------------------------------------------------------------------------
+--	Tracking menu on click
+
+local Minimap_OnClick = Minimap:GetScript("OnMouseUp")
+Minimap:SetScript("OnMouseUp", function(self, button)
+	if button == "RightButton" then
+		ToggleDropDownMenu(1, nil, MiniMapTrackingDropDown, "cursor")
+	else
+		Minimap_OnClick(self, button)
+	end
+end)
+
+------------------------------------------------------------------------
+--	Mail text
+
+MiniMapMailFrame:ClearAllPoints()
+MiniMapMailFrame:SetPoint("BOTTOMLEFT")
+MiniMapMailFrame:SetSize(50, 20)
+MiniMapMailFrame:SetScale(1 / SCALE)
+
+MiniMapMailIcon:SetTexture("")
+MiniMapMailBorder:SetTexture("")
+
+local mailText = MiniMapMailFrame:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
+mailText:SetPoint("BOTTOMLEFT", 5, 3)
+mailText:SetTextColor(1, 0.9, 0.8)
+mailText:SetText("Mail!")
+
+Minimap.mailText = mailText
+
+------------------------------------------------------------------------
+--	Instance difficulty text
+
+MiniMapInstanceDifficulty:ClearAllPoints()
+MiniMapInstanceDifficulty:SetPoint("TOPLEFT")
+
+GuildInstanceDifficulty:ClearAllPoints()
+GuildInstanceDifficulty:SetPoint("TOPLEFT")
+
+------------------------------------------------------------------------
+--	Clock text
+
+TimeManagerFrame:ClearAllPoints()
+TimeManagerFrame:SetPoint("TOPRIGHT", Minimap, "BOTTOMRIGHT", 52, -10)
+TimeManagerFrame:SetScale(1 / SCALE)
+
+local clockButton = TimeManagerClockButton
+
+clockButton:ClearAllPoints()
+clockButton:SetPoint("BOTTOMRIGHT", Minimap, -3, 3)
+clockButton:SetWidth(55)
+clockButton:SetHeight(18)
+
+clockButton:RegisterForClicks("AnyUp")
+clockButton:SetScript("OnClick", function(self, button)
+	if self.alarmFiring then
+		PlaySound("igMainMenuQuit")
+		TimeManager_TurnOffAlarm()
+	elseif button == "RightButton" then
+		if not Calendar_Toggle then
+			LoadAddOn("Blizzard_Calendar")
+		end
+		Calendar_Toggle()
+	else
+		TimeManager_Toggle()
+	end
+end)
+--[[
+local GAMETIME_TOOLTIP_TOGGLE_CALENDAR = GAMETIME_TOOLTIP_TOGGLE_CALENDAR:gsub("Click", "Right-click")
+
+function TimeManagerClockButton_UpdateTooltip()
+	GameTooltip:ClearLines()
+
+	if TimeManagerClockButton.alarmFiring then
+		local alarmMessage = GetCVar(CVAR_ALARM_MESSAGE)
+		if alarmMessage:trim() ~= "" then
+			GameTooltip:AddLine(alarmMessage, 1, 1, 1)
+			GameTooltip:AddLine(" ")
+		end
+		GameTooltip:AddLine(TIMEMANAGER_ALARM_TOOLTIP_TURN_OFF)
+	else
+		GameTime_UpdateTooltip()
+		GameTooltip:AddLine(" ")
+		GameTooltip:AddLine(GAMETIME_TOOLTIP_TOGGLE_CLOCK)
+		GameTooltip:AddLine(GAMETIME_TOOLTIP_TOGGLE_CALENDAR)
+	end
+
+	GameTooltip:Show()
+end
+
+function GameTime_UpdateTooltip()
+	GameTooltip:AddLine(date("%A, %d %B %Y"), 1, 1, 1)
+	GameTooltip:AddLine(" ")
+	GameTooltip:AddDoubleLine(TIMEMANAGER_TOOLTIP_LOCALTIME, GameTime_GetLocalTime(true), nil, nil, nil, 1, 1, 1)
+	GameTooltip:AddDoubleLine(TIMEMANAGER_TOOLTIP_REALMTIME, GameTime_GetGameTime(true), nil, nil, nil, 1, 1, 1)
+end
+]]
+local clockFrame, clockText, clockAlarmTexture = clockButton:GetRegions()
+
+clockFrame:Hide()
+clockAlarmTexture:SetTexture("")
+
+clockText:ClearAllPoints()
+clockText:SetPoint("BOTTOMRIGHT", clockButton)
+clockText:SetFontObject(NumberFontNormalSmall)
+clockText:SetJustifyH("RIGHT")
+clockText:SetTextColor(classR, classG, classB)
+
+Minimap.clockText = clockText
+--[[
+do
+	local OnUpdate = TimeManagerClockButton:GetScript("OnUpdate")
+
+	local counter = 0
+	TimeManagerClockButton:SetScript("OnUpdate", function(self, elapsed)
+		OnUpdate(self, elapsed)
+		if not self.alarmFiring then return end
+		counter = counter + elapsed
+		local val = counter % 0.4
+		if counter > 0.2 then
+			val = 0.4 - val
+		end
+		val = val * 5
+		clockText:SetTextColor(1, 1 / val, 1 / val)
+	end)
+end
+
+hooksecurefunc("TimeManager_FireAlarm", function()
+	clockText:SetFontObject(NumberFontNormal)
+	clockText:SetTextColor(1, 0, 0)
+end)
+
+hooksecurefunc("TimeManager_TurnOffAlarm", function()
+	if CalendarGetNumPendingInvites() > 0 then
+		clockText:SetFontObject(NumberFontNormal)
+		clockText:SetTextColor(1, 0.8, 0)
+	else
+		clockText:SetFontObject(NumberFontNormalSmall)
+		clockText:SetTextColor(classR, classG, classB)
+	end
+end)
+
+GameTimeFrame:SetScript("OnEvent", function()
+	if TimeManagerClockButton.alarmFiring then
+		return
+	end
+	if CalendarGetNumPendingInvites() > 0 then
+		clockText:SetFontObject(NumberFontNormal)
+		clockText:SetTextColor(1, 0.8, 0)
+	else
+		clockText:SetFontObject(NumberFontNormalSmall)
+		clockText:SetTextColor(classR, classG, classB)
+	end
+end)
+]]
