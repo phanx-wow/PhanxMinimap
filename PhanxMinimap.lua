@@ -112,11 +112,72 @@ Minimap.mailText = mailText
 ------------------------------------------------------------------------
 --	Instance difficulty text
 
+MiniMapInstanceDifficulty:SetParent(Minimap)
 MiniMapInstanceDifficulty:ClearAllPoints()
-MiniMapInstanceDifficulty:SetPoint("TOPLEFT")
+MiniMapInstanceDifficulty:SetPoint("TOPRIGHT", -2, 20)
 
-GuildInstanceDifficulty:ClearAllPoints()
-GuildInstanceDifficulty:SetPoint("TOPLEFT")
+MiniMapInstanceDifficultyText:ClearAllPoints()
+MiniMapInstanceDifficultyText:SetPoint("RIGHT", 0, -9)
+MiniMapInstanceDifficultyText:SetFontObject(TextStatusBarText)
+
+MiniMapInstanceDifficultyTexture:Hide()
+
+GuildInstanceDifficulty:Hide()
+
+MiniMapInstanceDifficulty:HookScript("OnEvent", function(self, event, isGuildGroup)
+	if event == "GUILD_PARTY_STATE_UPDATED" then
+		self.__isGuildGroup = isGuildGroup
+	end
+end)
+
+function MiniMapInstanceDifficulty_Update()
+	local instanceName, instanceType, difficulty, _, maxPlayers, playerDifficulty, isDynamicInstance = GetInstanceInfo()
+	local _, _, isHeroic, isChallengeMode = GetDifficultyInfo(difficulty)
+
+	if MiniMapInstanceDifficulty.__isGuildGroup then
+		instanceType = "GUILD"
+	end
+
+	local color = ChatTypeInfo[strupper(instanceType)]
+
+	if color and maxPlayers > 0 then
+		MiniMapInstanceDifficultyText:SetFormattedText("%s%d", isChallengeMode and "++" or isHeroic and "+" or "", maxPlayers)
+		MiniMapInstanceDifficultyText:SetTextColor(color.r, color.g, color.b)
+		MiniMapInstanceDifficulty:Show()
+	else
+		MiniMapInstanceDifficulty:Hide()
+	end
+end
+
+local difficultyText = {
+	DUNGEON_DIFFICULTY1,
+	DUNGEON_DIFFICULTY2,
+	RAID_DIFFICULTY1,
+	RAID_DIFFICULTY2,
+	RAID_DIFFICULTY3,
+	RAID_DIFFICULTY4,
+	UNKNOWN,
+	CHALLENGE_MODE,
+}
+
+MiniMapInstanceDifficulty:EnableMouse(true)
+MiniMapInstanceDifficulty:SetScript("OnEnter", function(self)
+	local instanceName, instanceType, difficulty, difficultyText, maxPlayers, playerDifficulty, isDynamicInstance = GetInstanceInfo()
+
+	GameTooltip:SetOwner(self, "ANCHOR_NONE")
+	GameTooltip:SetPoint("TOPRIGHT", self, "LEFT")
+
+	GameTooltip:AddLine(instanceName, 1, 0.82, 0)
+	GameTooltip:AddLine(difficultyText, 1, 1, 1)
+	GameTooltip:AddLine(difficultyText[difficulty] or UNKNOWN, 1, 1, 1)
+
+	if self.__isGuildGroup then
+		GameTooltip:AddLine(GUILD, 1, 1, 1)
+	end
+
+	GameTooltip:Show()
+end)
+MiniMapInstanceDifficulty:SetScript("OnLeave", GameTooltip_Hide)
 
 ------------------------------------------------------------------------
 --	Clock text
