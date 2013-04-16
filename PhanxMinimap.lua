@@ -3,7 +3,7 @@
 
 local ADDON = ...
 
-local SCALE = 1.25
+local SCALE = 1.5
 
 local color = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[ select(2, UnitClass("player")) ]
 local classR, classG, classB = color.r, color.g, color.b
