@@ -20,7 +20,7 @@ Minimap:SetPoint("TOPRIGHT", UIParent, floor(-15 / SCALE), floor(-15 / SCALE))
 
 Minimap:SetScale(SCALE)
 
-Minimap:SetMaskTexture("Interface\\AddOns\\"..ADDON.."\\media\\Minimap-Mask")
+Minimap:SetMaskTexture("Interface\\BUTTONS\\WHITE8X8")
 function GetMinimapShape() return "SQUARE" end
 
 MinimapCluster:EnableMouse(false)
@@ -131,17 +131,26 @@ MiniMapInstanceDifficulty:HookScript("OnEvent", function(self, event, isGuildGro
 end)
 
 function MiniMapInstanceDifficulty_Update()
-	local instanceName, instanceType, difficulty, _, maxPlayers, playerDifficulty, isDynamicInstance = GetInstanceInfo()
+	local instanceName, instanceType, difficulty, _, maxPlayers = GetInstanceInfo()
 	local _, _, isHeroic, isChallengeMode = GetDifficultyInfo(difficulty)
 
+	local color
 	if MiniMapInstanceDifficulty.__isGuildGroup then
-		instanceType = "GUILD"
+		color = ChatTypeInfo["GUILD"]
+	elseif instanceType == "scenario" then
+		color = ChatTypeInfo["INSTANCE_CHAT"]
+	else
+		color = ChatTypeInfo[strupper(instanceType)]
 	end
 
-	local color = ChatTypeInfo[strupper(instanceType)]
-
 	if color and maxPlayers > 0 then
-		MiniMapInstanceDifficultyText:SetFormattedText("%s%d", isChallengeMode and "++" or isHeroic and "+" or "", maxPlayers)
+		if difficulty == 14 then
+			MiniMapInstanceDifficultyText:SetText("FX")
+		elseif difficulty == 7 then
+			MiniMapInstanceDifficultyText:SetText("LFR")
+		else
+			MiniMapInstanceDifficultyText:SetFormattedText("%s%d", isChallengeMode and "++" or isHeroic and "+" or "", maxPlayers)
+		end
 		MiniMapInstanceDifficultyText:SetTextColor(color.r, color.g, color.b)
 		MiniMapInstanceDifficulty:Show()
 	else
@@ -149,27 +158,15 @@ function MiniMapInstanceDifficulty_Update()
 	end
 end
 
-local difficultyText = {
-	DUNGEON_DIFFICULTY1,
-	DUNGEON_DIFFICULTY2,
-	RAID_DIFFICULTY1,
-	RAID_DIFFICULTY2,
-	RAID_DIFFICULTY3,
-	RAID_DIFFICULTY4,
-	UNKNOWN,
-	CHALLENGE_MODE,
-}
-
 MiniMapInstanceDifficulty:EnableMouse(true)
 MiniMapInstanceDifficulty:SetScript("OnEnter", function(self)
-	local instanceName, instanceType, difficulty, difficultyText, maxPlayers, playerDifficulty, isDynamicInstance = GetInstanceInfo()
+	local instanceName, _, _, difficultyText = GetInstanceInfo()
 
 	GameTooltip:SetOwner(self, "ANCHOR_NONE")
 	GameTooltip:SetPoint("TOPRIGHT", self, "LEFT")
 
 	GameTooltip:AddLine(instanceName, 1, 0.82, 0)
 	GameTooltip:AddLine(difficultyText, 1, 1, 1)
-	GameTooltip:AddLine(difficultyText[difficulty] or UNKNOWN, 1, 1, 1)
 
 	if self.__isGuildGroup then
 		GameTooltip:AddLine(GUILD, 1, 1, 1)
@@ -183,8 +180,7 @@ MiniMapInstanceDifficulty:SetScript("OnLeave", GameTooltip_Hide)
 --	Clock text
 
 TimeManagerFrame:ClearAllPoints()
-TimeManagerFrame:SetPoint("TOPRIGHT", Minimap, "BOTTOMRIGHT", 52, -10)
-TimeManagerFrame:SetScale(1 / SCALE)
+TimeManagerFrame:SetPoint("TOPRIGHT", Minimap, "BOTTOMRIGHT", 4, -10)
 
 local clockButton = TimeManagerClockButton
 
