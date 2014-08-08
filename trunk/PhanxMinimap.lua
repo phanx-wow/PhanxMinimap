@@ -15,10 +15,11 @@ end
 ------------------------------------------------------------------------
 --	General
 
-Minimap:ClearAllPoints()
-Minimap:SetPoint("TOPRIGHT", UIParent, floor(-15 / SCALE), floor(-15 / SCALE))
-
 Minimap:SetScale(SCALE)
+Minimap:ClearAllPoints()
+Minimap:SetPoint("BOTTOMRIGHT", UIParent, -10, 40)
+-- Minimap:SetPoint("TOPRIGHT", UIParent, floor(-15 / SCALE), floor(-15 / SCALE))
+
 
 Minimap:SetMaskTexture("Interface\\BUTTONS\\WHITE8X8")
 function GetMinimapShape() return "SQUARE" end
@@ -70,6 +71,9 @@ for _, obj in pairs({
 	MinimapZoneTextButton,
 	MinimapZoomIn,
 	MinimapZoomOut,
+	
+	MiniMapInstanceDifficulty,
+	TimeManagerClockButton,
 }) do
 	Hide(obj)
 end
@@ -110,7 +114,7 @@ mailText:SetText("Mail!")
 Minimap.mailText = mailText
 
 ------------------------------------------------------------------------
---	Instance difficulty text
+--[[	Instance difficulty text
 
 MiniMapInstanceDifficulty:SetParent(Minimap)
 MiniMapInstanceDifficulty:ClearAllPoints()
@@ -175,9 +179,9 @@ MiniMapInstanceDifficulty:SetScript("OnEnter", function(self)
 	GameTooltip:Show()
 end)
 MiniMapInstanceDifficulty:SetScript("OnLeave", GameTooltip_Hide)
-
+]]
 ------------------------------------------------------------------------
---	Clock text
+--[[	Clock text
 
 TimeManagerFrame:ClearAllPoints()
 TimeManagerFrame:SetPoint("TOPRIGHT", Minimap, "BOTTOMRIGHT", 4, -10)
@@ -203,7 +207,8 @@ clockButton:SetScript("OnClick", function(self, button)
 		TimeManager_Toggle()
 	end
 end)
---[[
+]]
+--[[ OLD
 local GAMETIME_TOOLTIP_TOGGLE_CALENDAR = GAMETIME_TOOLTIP_TOGGLE_CALENDAR:gsub("Click", "Right-click")
 
 function TimeManagerClockButton_UpdateTooltip()
@@ -233,6 +238,7 @@ function GameTime_UpdateTooltip()
 	GameTooltip:AddDoubleLine(TIMEMANAGER_TOOLTIP_REALMTIME, GameTime_GetGameTime(true), nil, nil, nil, 1, 1, 1)
 end
 ]]
+--[[
 local clockFrame, clockText, clockAlarmTexture = clockButton:GetRegions()
 
 clockFrame:Hide()
@@ -245,7 +251,8 @@ clockText:SetJustifyH("RIGHT")
 clockText:SetTextColor(classR, classG, classB)
 
 Minimap.clockText = clockText
---[[
+]]
+--[[ OLD
 do
 	local OnUpdate = TimeManagerClockButton:GetScript("OnUpdate")
 
