@@ -3,7 +3,7 @@
 
 ## Author: Phanx
 ## X-Email: addons@phanx.net
-## X-Copyright: Copyright (c) 2008-2014 Phanx. All rights reserved.
-## X-License: See the accompanying LICENSE file for details.
+## X-Copyright: Copyright (c) 2008-2014 Phanx.
+## X-License: All rights reserved.
 
 PhanxMinimap.lua
