@@ -1,9 +1,7 @@
 ## Interface: 60000
-## Version: wowi:revision
 
 ## Author: Phanx
 ## X-Email: addons@phanx.net
-## X-Copyright: Copyright (c) 2008-2014 Phanx.
-## X-License: All rights reserved.
+## X-Copyright: Copyright (c) 2008-2014 Phanx. All rights reserved.
 
 PhanxMinimap.lua
