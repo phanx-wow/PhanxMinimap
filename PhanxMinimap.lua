@@ -55,9 +55,11 @@ end
 for _, obj in pairs({
 	BattlegroundShine,
 	GameTimeFrame,
+	GarrisonLandingPageMinimapButton,
 	MinimapBorder,
 	MinimapBorderTop,
 	MinimapCompassTexture,
+	MiniMapInstanceDifficulty,
 	MinimapNorthTag,
 	MinimapToggleButton,
 	MiniMapTracking,
@@ -67,8 +69,6 @@ for _, obj in pairs({
 	MinimapZoneTextButton,
 	MinimapZoomIn,
 	MinimapZoomOut,
-
-	MiniMapInstanceDifficulty,
 	TimeManagerClockButton,
 }) do
 	Hide(obj)
