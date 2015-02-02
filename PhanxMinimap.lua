@@ -79,6 +79,8 @@ GameTimeFrame:EnableMouse(false)
 
 GameTimeCalendarInvitesTexture:SetParent(Minimap)
 
+GarrisonLandingPageMinimapButton.IsShown = function() return true end -- otherwise the Garrison Report UI won't show
+
 ------------------------------------------------------------------------
 --	Tracking menu on click
 
