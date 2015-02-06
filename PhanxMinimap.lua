@@ -1,17 +1,17 @@
 --[[--------------------------------------------------------------------
 	PhanxMinimap
 	Just another basic minimap modification.
-	Copyright (c) 2008-2014 Phanx <addons@phanx.net>. All rights reserved.
+	Copyright (c) 2008-2015 Phanx <addons@phanx.net>. All rights reserved.
 ----------------------------------------------------------------------]]
 
-local SCALE = 1.5
+local SCALE = 1.25
 
 ------------------------------------------------------------------------
 --	General
 
 Minimap:SetScale(SCALE)
 Minimap:ClearAllPoints()
-Minimap:SetPoint("BOTTOMRIGHT", UIParent, -10, 40)
+Minimap:SetPoint("BOTTOMLEFT", UIParent, 20, 53)
 
 Minimap:SetMaskTexture("Interface\\BUTTONS\\WHITE8X8")
 function GetMinimapShape() return "SQUARE" end
