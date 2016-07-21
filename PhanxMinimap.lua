@@ -11,7 +11,7 @@ local SCALE = 1.25
 
 Minimap:SetScale(SCALE)
 Minimap:ClearAllPoints()
-Minimap:SetPoint("BOTTOMLEFT", UIParent, 20, 53)
+Minimap:SetPoint("TOPRIGHT", UIParent, -10, -10)
 
 Minimap:SetMaskTexture("Interface\\BUTTONS\\WHITE8X8")
 function GetMinimapShape() return "SQUARE" end
