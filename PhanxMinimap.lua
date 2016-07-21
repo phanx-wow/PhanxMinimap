@@ -1,7 +1,7 @@
 --[[--------------------------------------------------------------------
 	PhanxMinimap
 	Just another basic minimap modification.
-	Copyright (c) 2008-2015 Phanx <addons@phanx.net>. All rights reserved.
+	Copyright (c) 2008-2016 Phanx <addons@phanx.net>. All rights reserved.
 ----------------------------------------------------------------------]]
 
 local SCALE = 1.25
